@@ -1,4 +1,6 @@
 import json
+from operator import xor
+import random
 
 # função que le arquivo json
 def read_file_json(path):
@@ -13,10 +15,15 @@ def write_file_json(data):
     file.write(json_objeto)
 
 
+
+# Variável para armazenar o valor num registrador 
+#rs_value2 = 0
+
 # funcao que recebe o binario do registrador e verifica qual o source ele corresponde         
 def get_source_r(bin):
     
     sources = {
+        '00000': '$0',
         '00001': '$1',
         '00010': '$2',
         '00011': '$3',
@@ -56,6 +63,7 @@ def get_source_r(bin):
             
 # função que verifica se é do tipo r        
 def type_instruction_r(bin):
+    rs_value = 0
     type1 = False
     command = None
     text = {}
@@ -71,72 +79,138 @@ def type_instruction_r(bin):
     if opcode == '000000' and fn == '100000':
         command = 'add'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value + rd_value  
     elif opcode == '000000' and fn == '100001':
         command = 'addu'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value + rd_value  
     elif opcode == '000000' and fn == '100100':
         command = 'and'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value and rd_value  
     elif opcode == '000000' and fn == '011010':
         command = 'div'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value / rd_value  
     elif opcode == '000000' and fn == '011011':
         command = 'divu'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value / rd_value  
     elif opcode == '000000' and fn == '001000':
         command = 'jr'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value + rd_value
     elif opcode == '000000' and fn == '010000':
         command = 'mfhi'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value + rd_value  
     elif opcode == '000000' and fn == '010010':
         command = 'mflo'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value + rd_value  
     elif opcode == '000000' and fn == '011000':
         command = 'mult'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value * rd_value  
     elif opcode == '000000' and fn == '011001':
         command = 'multu'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value * rd_value
     elif opcode == '000000' and fn == '100111':
         command = 'nor'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = not (rt_value  or rd_value ) 
     elif opcode == '000000' and fn == '100101':
         command = 'or'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value or rd_value  
     elif opcode == '000000' and fn == '000000':
         command = 'sll'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value + rd_value  
     elif opcode == '000000' and fn == '000100':
         command = 'sllv'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value + rd_value  
     elif opcode == '000000' and fn == '101010':
         command = 'slt'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value + rd_value  
     elif opcode == '000000' and fn == '000011':
         command = 'sra'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value + rd_value  
     elif opcode == '000000' and fn == '000111':
         command = 'srav'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value + rd_value  
     elif opcode == '000000' and fn == '000010':
         command = 'srl'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value + rd_value  
     elif opcode == '000000' and fn == '000110':
         command = 'srlv'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value + rd_value  
     elif opcode == '000000' and fn == '100010':
         command = 'sub'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value - rd_value  
     elif opcode == '000000' and fn == '100011':
         command = 'subu'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value = rt_value - rd_value  
     #elif opcode == '000000' and fn == '001100':
         #command = 'syscall'
         #type1 = True
     elif opcode == '000000' and fn == '100110':
         command = 'xor'
         type1 = True
+        rt_value = randomNumber()  
+        rd_value = randomNumber()
+        rs_value =  xor(rt_value, rd_value)   
     else:
         command = {}
     
@@ -145,9 +219,10 @@ def type_instruction_r(bin):
         'command': command,
         'rs': rs,
         'rt': rt,
-        'rd': rd
+        'rd': rd,
+        'rs_value': rs_value,
     }
-
+    
     return result
     
 # função que gera a instrução misp para o tipo r 
@@ -165,8 +240,18 @@ def generate_instruction_r(data_instruction):
         
     return text
 
+def generate_instruction_r2(data_instruction):
+    rs2 = data_instruction.get('rs')    
+    source_rs2 = get_source_r(rs2)
+    return source_rs2
+
+def generate_instruction_r3(data_instruction):
+    rs2 =  data_instruction.get('rs_value')  
+    return rs2
+
 # exemplo de codigo
 def type_instruction_i(bin):
+    rs_value = 0
     type2 = False
     command = None
     text = {}
@@ -180,54 +265,105 @@ def type_instruction_i(bin):
     if opcode == '001000' :
         command = 'addi'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato  
     elif opcode == '001001':
         command = 'addiu'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato  
     elif opcode == '001100':
         command = 'andi'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value and imediato 
     elif opcode == '000111':
         command = 'bgtz'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato  
     elif opcode == '000100':
         command = 'beq'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato  
     elif opcode == '000001':
         command = 'bltz'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato  
     elif opcode == '000110':
         command = 'blez'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato
     elif opcode == '000101':
         command = 'bne'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato
     elif opcode == '100000':
         command = 'lb'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato
     elif opcode == '100100':
         command = 'lbu'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato
     elif opcode == '001111':
         command = 'lui'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato
     elif opcode == '100011':
         command = 'lw'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato
     elif opcode == '001101':
         command = 'ori'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato
     elif opcode == '101000':
         command = 'sb'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato
     elif opcode == '001010':
         command = 'slti'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato
     elif opcode == '101011':
         command = 'sw'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato
     elif opcode == '001110':
         command = 'xori'
         type2 = True
+        rt_value = randomNumber()  
+        imediato = randomNumber()
+        rs_value = rt_value + imediato
     else:
         command = {}
     
@@ -236,6 +372,7 @@ def type_instruction_i(bin):
         'command': command,
         'rs': rs,
         'rt': rt,
+        'rs_value': rs_value,
     }
 
     return result
@@ -254,6 +391,15 @@ def generate_instruction_i(data_instruction):
         
     return text
 
+
+def generate_instruction_i2(data_instruction):
+    rs2 = data_instruction.get('rs')    
+    source_rs2 = get_source_r(rs2)
+    return source_rs2
+
+def generate_instruction_i3(data_instruction):
+    rs2 =  data_instruction.get('rs_value')  
+    return rs2
 
 # exemplo de codigo
 def type_instruction_j(bin):
@@ -295,3 +441,38 @@ def generate_instruction_j(data_instruction):
     text = f'{command}'
         
     return text
+
+def randomNumber():
+        
+    number = random.randrange(1, 100)
+    return number
+    
+def getPc(conf):
+    s4 = conf.get('regs').get('$4')
+    s16 = conf.get('regs').get('$16')
+    s17 = conf.get('regs').get('$17')
+    s28 = conf.get('regs').get('$28')
+    s29 = conf.get('regs').get('$29')
+    pc = conf.get('regs').get('pc')
+
+    
+
+def generate_instruction_s16(conf):
+    s16 = conf.get('regs').get('$16')  
+    return s16
+
+def generate_instruction_s17(conf):
+    s17 = conf.get('regs').get('$17')  
+    return s17
+
+def generate_instruction_s28(conf):
+    s28 = conf.get('regs').get('$28')  
+    return s28
+
+def generate_instruction_s29(conf):
+    s29 = conf.get('regs').get('$29')  
+    return s29
+
+def generate_instruction_pc(conf):
+    pc = conf.get('regs').get('pc')  + 4
+    return pc
