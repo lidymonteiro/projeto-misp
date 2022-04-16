@@ -1,3 +1,4 @@
+from cmath import nan
 import json
 from operator import xor
 import random
@@ -87,7 +88,6 @@ def type_instruction_r(bin, conf):
     rs = bin[6:11]      # 5 bits
     rt = bin[11:16]     # 5 bits
     rd = bin[16:21]     # 5 bits
-    #sh = 0             # 5 bits
     fn = bin[aux_fn:]   # 6 bits
     
     if opcode == '000000' and fn == '100000':
@@ -225,9 +225,9 @@ def type_instruction_r(bin, conf):
         rt_value = get_value_registrador(rt, conf) 
         rd_value = get_value_registrador(rd, conf)
         rs_value = rt_value - rd_value  
-    #elif opcode == '000000' and fn == '001100':
-        #command = 'syscall'
-        #type1 = True
+    elif opcode == '000000' and fn == '001100':
+        command = 'syscall'
+        type1 = True
     elif opcode == '000000' and fn == '100110':
         command = 'xor'
         type1 = True
@@ -280,12 +280,10 @@ def type_instruction_i(bin, conf):
     command = None
     imediato = 0
     text = {}
-    #aux_offset = len(bin) - 16      
     
     opcode = bin[:6]    # 6 bits
     rs = bin[6:11]      # 5 bits
     rt = bin[11:16]     # 5 bits
-    #offset = bin[aux_offset:]   # 16 bits
     
     if opcode == '001000' :
         command = 'addi'
@@ -398,6 +396,7 @@ def type_instruction_i(bin, conf):
         'rs': rs,
         'rt': rt,
         'rs_value': rs_value,
+        'imediato': imediato
     }
 
     return result
@@ -407,12 +406,12 @@ def generate_instruction_i(data_instruction):
     command = data_instruction.get('command')
     rs = data_instruction.get('rs')
     rt = data_instruction.get('rt')
+    imediato = data_instruction.get('imediato')
     
     source_rs = get_source_r(rs)
     source_rt = get_source_r(rt)
-
     
-    text = f'{command} {source_rs} {source_rt} '
+    text = f'{command} {source_rs} {source_rt} {imediato}'
         
     return text
 
@@ -431,14 +430,8 @@ def type_instruction_j(bin):
     type3 = False
     command = None
     text = {}
-    #aux_jmp = len(bin) - 26      
-    
+     
     opcode = bin[:6]    # 6 bits
-    #rs = bin[6:11]      # 5 bits
-    #rt = bin[11:16]     # 5 bits
-    #rd = bin[16:21]     # 5 bits
-    #sh = 0             # 5 bits
-    #jmp = bin[aux_jmp:]   # 6 bits
     
     if opcode == '000010' :
         command = 'j'
@@ -459,25 +452,27 @@ def type_instruction_j(bin):
 # exemplo de codigo
 def generate_instruction_j(data_instruction):
     command = data_instruction.get('command')
-    #rs = data_instruction.get('rs')
-    
-    #source_rs = get_source_r(rs)
-    
-    text = f'{command}'
-        
+    text = f'{command}'      
     return text
 
+def generate_instruction_j2(data_instruction):
+    rs2 = data_instruction.get('rs')    
+    source_rs2 = get_source_r(rs2)
+    return source_rs2
 
+def generate_instruction_j3(data_instruction):
+    rs2 =  data_instruction.get('rs_value')  
+    return rs2
     
-def getPc(conf):
-    s1 = conf.get('regs').get('$1')
-    s3 = conf.get('regs').get('$3')
-    s4 = conf.get('regs').get('$4')
-    s16 = conf.get('regs').get('$16')
-    s17 = conf.get('regs').get('$17')
-    s28 = conf.get('regs').get('$28')
-    s29 = conf.get('regs').get('$29')
-    pc = conf.get('regs').get('pc')
+#def getPc(conf):
+#    s1 = conf.get('regs').get('$1')
+ #   s3 = conf.get('regs').get('$3')
+  #  s4 = conf.get('regs').get('$4')
+   # s16 = conf.get('regs').get('$16')
+   # s17 = conf.get('regs').get('$17')
+   # s28 = conf.get('regs').get('$28')
+   # s29 = conf.get('regs').get('$29')
+   # pc = conf.get('regs').get('pc')
 
 def generate_instruction_s28(conf):
     s28 = conf.get('regs').get('$28')  
@@ -500,14 +495,12 @@ def generate_dict_regs(conf, value_pc, cont, aux, type_aux):
     if type_aux == 'aux_r':      
         rs = generate_instruction_r2(aux)    
         value_rs = generate_instruction_r3(aux)
+        text[rs] = value_rs
     elif type_aux == 'aux_i': 
         rs = generate_instruction_i2(aux)    
         value_rs = generate_instruction_i3(aux)
-    #elif type_aux == 'aux_j': 
-     #   rs = generate_instruction_j2(aux)    
-      #  value_rs = generate_instruction_j3(aux)
-
-    text[rs] = value_rs
+        text[rs] = value_rs
+    
     values_regs = dict(itertools.islice(regs.items(), len(regs)))
     for reg in values_regs:
         if reg == 'pc':
@@ -516,7 +509,6 @@ def generate_dict_regs(conf, value_pc, cont, aux, type_aux):
         else:
             value = conf.get('regs').get(reg, 0)
             text[reg] = value
-        #print(reg)
-        
-    return text
+    cont += 1
+    return text, value_pc
     
